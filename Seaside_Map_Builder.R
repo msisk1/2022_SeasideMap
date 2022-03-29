@@ -1,3 +1,5 @@
+#Just needs to be run once
+
 if (FALSE){
   install.packages(sf)
   install.packages(tidyverse)
@@ -19,10 +21,10 @@ base.url <- "https://seaside-test.library.nd.edu/"
 seaside.data <- read_sheet("https://docs.google.com/spreadsheets/d/1IHBm2UDZNQ91ilOquYVVOd2Ol7rs61uMKkkkpCKrnwc/edit#gid=333803365",
                            col_types = "ccccccccccccccddcccccccccc")
 
-1
+1 # This is just for the google sheets authentication
 
 
-
+#Building the popup
 seaside.data <- seaside.data %>%
   mutate(popup = paste0("<b>", Structure_Name_1, "</b><br><hr>",
                         if_else(condition = is.na(Address),true = "", 
@@ -33,16 +35,17 @@ seaside.data <- seaside.data %>%
                         )
          )
 
-
+#removing null coordinates and turning it into a mapable object
 seaside.data<-seaside.data %>%
   filter(!is.na(lat)& !is.na(long))%>%
   st_as_sf(coords = c("long","lat")) %>% 
-  st_set_crs(value = 4326) 
+  st_set_crs(value = 4326)  #the code just means lat/lon coordinates
 
 
+#leaflet requires colors defined like this
 factpal <- colorFactor(palette = c("blue","green","yellow","orange") , levels = unique(seaside.data$`Building Type`))
 
-
+#Building the map object
 seaside.map <- leaflet()%>%
   # addTiles(group = "OSM") %>%
   addProviderTiles(provider = providers$Esri.WorldTopoMap, group = "Streets")%>%
@@ -53,9 +56,9 @@ seaside.map <- leaflet()%>%
   addLayersControl(baseGroups = c("Streets", "Imagery"),
                    options = layersControlOptions(collapsed = FALSE))%>%
   addLegend(pal = factpal, values =unique(seaside.data$`Building Type`), position = "bottomleft")
-seaside.map
+seaside.map #displaying it
 
-
+#saving it as an html file for import
 saveWidget(seaside.map, file="Seaside-v2_3.html")
 
 
